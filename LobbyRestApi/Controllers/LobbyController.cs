@@ -1,4 +1,4 @@
-﻿using LobbyRestApi.Data;
+﻿
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -8,6 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using LobbyModels;
+using LobbyModels.Interfaces;
+using LobbyRestApi.Models;
 
 namespace LobbyRestApi.Controllers
 {
@@ -27,24 +30,22 @@ namespace LobbyRestApi.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<Lobby> GetLobbies()
+        public IEnumerable<ILobbyModel> GetLobbies()
         {
             return GetLobbyList();
         }
 
         [HttpPost]
-        public LobbyPostMessage Post([FromBody] LobbyPostMessage lobbyMessage)
+        public ILobbyPostMessage Post([FromBody] ILobbyPostMessage lobbyMessage)
         {
             var lobbies = GetLobbyWrapperList();
-            var lobby = lobbyMessage.lobby;
+            var lobby = lobbyMessage.Lobby;
             lock (ThisLock)
             {
-                
-                switch (lobbyMessage.messageType)
+                switch (lobbyMessage.MessageType)
                 {
                     case LobbyMessageType.CREATE:
-                        //if (lobbies.Any(l => l.Lobby.LobbyId == lobby.LobbyId)) return lobbies.Single(l => l.Lobby.LobbyId == lobby.LobbyId);
-                        //lobby.LobbyId = 
+                        lobby.LobbyId = GetFirstFreeId();
                         lobbies.Add(new LobbyWrapper()
                         {
                             LastUpdate = DateTime.Now, 
@@ -58,15 +59,13 @@ namespace LobbyRestApi.Controllers
                     case LobbyMessageType.REMOVE:
                         lobbies.RemoveAt(lobbies.IndexOf(lobbies.SingleOrDefault(l => l.Lobby.LobbyId == lobby.LobbyId)));
                         break;
-                    default:
-                        break;
                 }
             }
             CacheLobbyList(lobbies);
             return new LobbyPostMessage()
             {
-                messageType = LobbyMessageType.UPDATE,
-                lobby = lobby
+                MessageType = LobbyMessageType.UPDATE,
+                Lobby = lobby
             };
         }
 
@@ -74,12 +73,14 @@ namespace LobbyRestApi.Controllers
         {
             if (GetLobbyWrapperList().Any())
             {
+                var ints = GetLobbyWrapperList().Select(lw => lw.Lobby.LobbyId).ToArray();
+                int? firstAvailable = Enumerable.Range(0, int.MaxValue)
+                    .Except(ints)
+                    .FirstOrDefault();
+                return firstAvailable.Value;
+            }
 
-            }
-            else
-            {
-                return 1;
-            }
+            return 1;
         }
 
         [HttpPost("Alive/{lobbyId}")]
@@ -111,7 +112,7 @@ namespace LobbyRestApi.Controllers
             return lobbies;
         }
 
-        private List<Lobby> GetLobbyList()
+        private List<ILobbyModel> GetLobbyList()
         {
             return GetLobbyWrapperList().Select(lw => lw.Lobby).ToList();
         }
@@ -127,7 +128,7 @@ namespace LobbyRestApi.Controllers
         private class LobbyWrapper
         {
             public DateTime LastUpdate { get; set; }
-            public Lobby Lobby { get; set; }
+            public ILobbyModel Lobby { get; set; }
             public IPAddress HostIp { get; set; }
             public string Region { get; set; } = "EUROPE";
         }
