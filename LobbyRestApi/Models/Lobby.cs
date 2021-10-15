@@ -9,6 +9,6 @@ namespace LobbyRestApi.Models
     public class Lobby : ILobbyModel
     {
         public int LobbyId { get; set; }
-        public int PlayerCount { get; set; }
+        public int PlayerCount { get; set; } = 1;
     }
 }

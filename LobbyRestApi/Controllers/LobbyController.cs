@@ -36,67 +36,108 @@ namespace LobbyRestApi.Controllers
         }
 
         [HttpPost]
-        public ILobbyPostMessage Post([FromBody] ILobbyPostMessage lobbyMessage)
+        public int CreateLobby()
         {
-            var lobbies = GetLobbyWrapperList();
-            var lobby = lobbyMessage.Lobby;
-            lock (ThisLock)
+            var lobby = new Lobby()
             {
-                switch (lobbyMessage.MessageType)
-                {
-                    case LobbyMessageType.CREATE:
-                        lobby.LobbyId = GetFirstFreeId();
-                        lobbies.Add(new LobbyWrapper()
-                        {
-                            LastUpdate = DateTime.Now, 
-                            Lobby = lobby,
-                            HostIp = Request.HttpContext.Connection.RemoteIpAddress
-                        });
-                        break;
-                    case LobbyMessageType.UPDATE:
-                        lobbies.SingleOrDefault(l => l.Lobby.LobbyId == lobby.LobbyId).Lobby.PlayerCount = lobby.PlayerCount;
-                        break;
-                    case LobbyMessageType.REMOVE:
-                        lobbies.RemoveAt(lobbies.IndexOf(lobbies.SingleOrDefault(l => l.Lobby.LobbyId == lobby.LobbyId)));
-                        break;
-                }
-            }
-            CacheLobbyList(lobbies);
-            return new LobbyPostMessage()
+                LobbyId = GetFirstFreeId()
+            };
+            LobbyWrapper wrapper = new LobbyWrapper()
             {
-                MessageType = LobbyMessageType.UPDATE,
+                HostIp = HttpContext.Connection.RemoteIpAddress,
+                LastUpdate = DateTime.Now,
                 Lobby = lobby
             };
+            AddLobbyToCache(wrapper);
+            return lobby.LobbyId;
         }
 
-        private int GetFirstFreeId()
-        {
-            if (GetLobbyWrapperList().Any())
-            {
-                var ints = GetLobbyWrapperList().Select(lw => lw.Lobby.LobbyId).ToArray();
-                int? firstAvailable = Enumerable.Range(0, int.MaxValue)
-                    .Except(ints)
-                    .FirstOrDefault();
-                return firstAvailable.Value;
-            }
-
-            return 1;
-        }
-
-        [HttpPost("Alive/{lobbyId}")]
-        public void KeepLobbyAlive(int lobbyId)
+        [HttpPost("KeepAlive")]
+        public void KeepLobbyAlive([FromBody] int lobbyId)
         {
             var lobbies = GetLobbyWrapperList();
             lobbies.SingleOrDefault(lw => lw.Lobby.LobbyId == lobbyId).LastUpdate = DateTime.Now;
             CacheLobbyList(lobbies);
         }
 
-        [HttpPost("{lobbyId}")]
-        public string GetHostIp(int lobbyId)
+        [HttpPost("GetHost")]
+        public string GetHostIp([FromBody] int lobbyId)
         {
             var lobbies = GetLobbyWrapperList();
             return lobbies.SingleOrDefault(lw => lw.Lobby.LobbyId == lobbyId).HostIp.ToString();
         }
+
+        [HttpPost("Delete")]
+        public void DeleteLobby([FromBody] int lobbyId)
+        {
+            var lobbies = GetLobbyWrapperList();
+            lobbies.Remove(lobbies.Single(lw => lw.Lobby.LobbyId == lobbyId));
+            CacheLobbyList(lobbies);
+        }
+
+
+
+
+        //[HttpPost]
+        //public ILobbyPostMessage Post([FromBody] ILobbyPostMessage lobbyMessage)
+        //{
+        //    var lobbies = GetLobbyWrapperList();
+        //    var lobby = lobbyMessage.Lobby;
+        //    lock (ThisLock)
+        //    {
+        //        switch (lobbyMessage.MessageType)
+        //        {
+        //            case LobbyMessageType.CREATE:
+        //                lobby.LobbyId = GetFirstFreeId();
+        //                lobbies.Add(new LobbyWrapper()
+        //                {
+        //                    LastUpdate = DateTime.Now, 
+        //                    Lobby = lobby,
+        //                    HostIp = Request.HttpContext.Connection.RemoteIpAddress
+        //                });
+        //                break;
+        //            case LobbyMessageType.UPDATE:
+        //                lobbies.SingleOrDefault(l => l.Lobby.LobbyId == lobby.LobbyId).Lobby.PlayerCount = lobby.PlayerCount;
+        //                break;
+        //            case LobbyMessageType.REMOVE:
+        //                lobbies.RemoveAt(lobbies.IndexOf(lobbies.SingleOrDefault(l => l.Lobby.LobbyId == lobby.LobbyId)));
+        //                break;
+        //        }
+        //    }
+        //    CacheLobbyList(lobbies);
+        //    return new LobbyPostMessage()
+        //    {
+        //        MessageType = LobbyMessageType.UPDATE,
+        //        Lobby = lobby
+        //    };
+        //}
+
+        private int GetFirstFreeId()
+        {
+            var list = GetLobbyWrapperList();
+            int id = 1;
+            if (list.Any())
+            {
+                var ints = list.Select(lw => lw.Lobby.LobbyId).ToArray();
+                id = Enumerable.Range(0, int.MaxValue)
+                    .Except(ints)
+                    .FirstOrDefault();
+            }
+            return id;
+        }
+
+        private void AddLobbyToCache(LobbyWrapper lobbyWrapper)
+        {
+            var list = GetLobbyWrapperList();
+            lock (ThisLock)
+            {
+                if (list.Any(lw => lw.Lobby.LobbyId == lobbyWrapper.Lobby.LobbyId)) return;
+                list.Add(lobbyWrapper);
+            }
+            CacheLobbyList(list);
+        }
+
+        
 
         private List<LobbyWrapper> GetLobbyWrapperList()
         {
