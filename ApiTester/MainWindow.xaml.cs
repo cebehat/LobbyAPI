@@ -26,7 +26,7 @@ namespace ApiTester
         public MainWindow()
         {
             InitializeComponent();
-            requestHandler = new RequestHandler("http://localhost:19255/api/Lobby");
+            requestHandler = new RequestHandler("https://lobbyrestapi20211016183500.azurewebsites.net/");
         }
 
         private void CreateButton_Click(object sender, RoutedEventArgs e)

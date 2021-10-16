@@ -14,7 +14,6 @@ using LobbyRestApi.Models;
 
 namespace LobbyRestApi.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
     public class LobbyController : ControllerBase
     {
@@ -30,12 +29,14 @@ namespace LobbyRestApi.Controllers
         }
 
         [HttpGet]
+        [Route("/")]
         public IEnumerable<ILobbyModel> GetLobbies()
         {
             return GetLobbyList();
         }
 
         [HttpPost]
+        [Route("/")]
         public int CreateLobby()
         {
             var lobby = new Lobby()
@@ -52,7 +53,8 @@ namespace LobbyRestApi.Controllers
             return lobby.LobbyId;
         }
 
-        [HttpPost("KeepAlive")]
+        [HttpPost]
+        [Route("/KeepAlive")]
         public void KeepLobbyAlive([FromBody] int lobbyId)
         {
             var lobbies = GetLobbyWrapperList();
@@ -60,14 +62,16 @@ namespace LobbyRestApi.Controllers
             CacheLobbyList(lobbies);
         }
 
-        [HttpPost("GetHost")]
+        [HttpPost]
+        [Route("/GetHost")]
         public string GetHostIp([FromBody] int lobbyId)
         {
             var lobbies = GetLobbyWrapperList();
             return lobbies.SingleOrDefault(lw => lw.Lobby.LobbyId == lobbyId).HostIp.ToString();
         }
 
-        [HttpPost("Delete")]
+        [HttpPost]
+        [Route("/Delete")]
         public void DeleteLobby([FromBody] int lobbyId)
         {
             var lobbies = GetLobbyWrapperList();
