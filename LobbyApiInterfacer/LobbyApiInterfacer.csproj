@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Company>PopShark Games</Company>
+    <Authors>Cebt</Authors>
+    <Product>LobbyApiInterfacer</Product>
+    <PackageId>LobbyApiInterfacer_Cebt_2021</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LobbyModels\LobbyModels.csproj" />
+  </ItemGroup>
+
+</Project>

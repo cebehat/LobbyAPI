@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using LobbyModels;
 using LobbyModels.Interfaces;
 using LobbyRestApi.Models;
+using System.Threading;
 
 namespace LobbyRestApi.Controllers
 {
@@ -18,6 +19,8 @@ namespace LobbyRestApi.Controllers
     public class LobbyController : ControllerBase
     {
         private static object ThisLock = new object();
+        public delegate void Worker();
+        private static Thread worker;
 
         private readonly ILogger<LobbyController> _logger;
         private IMemoryCache _cache;
@@ -26,6 +29,20 @@ namespace LobbyRestApi.Controllers
         {
             _logger = logger;
             _cache = cache;
+
+            if(worker == null)
+            {
+                worker = new Thread(new ThreadStart(Work));
+                worker.Start();
+            }
+        }
+
+        public void Work()
+        {
+            if (GetLobbyWrapperList().Any())
+            {
+
+            }
         }
 
         [HttpGet]
