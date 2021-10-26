@@ -95,9 +95,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LobbyApiInterfacer\LobbyApiInterfacer.csproj">
-      <Project>{0079cf97-9f5b-4228-ad3d-6ee3ab993bc5}</Project>
-      <Name>LobbyApiInterfacer</Name>
+    <ProjectReference Include="..\LobbyApiInterface\LobbyApiInterface.csproj">
+      <Project>{202adbad-6233-4e0a-84f4-8fb2ee76a994}</Project>
+      <Name>LobbyApiInterface</Name>
     </ProjectReference>
     <ProjectReference Include="..\LobbyModels\LobbyModels.csproj">
       <Project>{11d1f012-4ecc-43de-8f38-97f3e085401e}</Project>

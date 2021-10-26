@@ -1,12 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Company>PopShark Games</Company>
     <Authors>Cebt</Authors>
     <Product>LobbyApiInterfacer</Product>
     <PackageId>LobbyApiInterfacer_Cebt_2021</PackageId>
+    <RepositoryUrl>https://github.com/cebehat/LobbyAPI.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
